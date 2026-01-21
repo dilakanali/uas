@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS: Distribusi Apotek Jawa Timur | Fadilah Rabbani Kanali</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <style>
+        /* ========================================
+           TOTAL REDESIGN - MODERN WEBGIS
+           Hidup, Clean, Depth, Engaging
+           ======================================== */
+
+        /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #16213e 100%);
+            color: #1a202c;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* HEADER - PREMIUM & MODERN */
+        .header {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #06b6d4 100%);
+            color: white;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 20px 60px rgba(13, 148, 136, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 100% 0%, rgba(255,255,255,0.1), transparent 50%);
+            pointer-events: none;
+        }
+
+        .header-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title {
+            grid-column: 1;
+        }
+
+        .author-badge {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .info-panel {
+            grid-column: 1 / -1;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-title h1 i {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .header-title p {
+            font-size: 1rem;
+            opacity: 0.95;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .author-badge {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            padding: 0.85rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .author-badge:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            max-width: 1500px;
+            margin: 1.5rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            min-height: 750px;
+            height: auto;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2.2rem;
+        }
+
+        /* PANEL MODERN STYLING */
+        .basemap-selector,
+        .legend-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .basemap-selector:hover,
+        .legend-panel:hover {
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 1.3rem;
+            border-bottom: 2.5px solid #ecf0f1;
+        }
+
+        .panel-title i {
+            color: white;
+            background: linear-gradient(135deg, #0d9488, #06b6d4);
+            padding: 0.8rem;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 16px rgba(13, 148, 136, 0.25);
+        }
+
+        .panel-title h3 {
+            font-size: 1.2rem;
+            color: #0f172a;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* BASEMAP OPTIONS */
+        .basemap-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.95rem;
+        }
+
+        .basemap-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.2rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border: 2px solid #d1d5db;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .basemap-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(13, 148, 136, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .basemap-option:hover::before {
+            left: 100%;
+        }
+
+        .basemap-option:hover {
+            background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+            transform: translateX(5px) translateY(-1px);
+            border-color: #0d9488;
+            box-shadow: 0 16px 40px rgba(13, 148, 136, 0.22);
+        }
+
+        .basemap-option.active {
+            background: linear-gradient(135deg, #ccf4f0 0%, #a7f3d0 100%);
+            border-color: #0d9488;
+            border-left: 4px solid #0d9488;
+            box-shadow: 0 12px 35px rgba(13, 148, 136, 0.25);
+        }
+
+        .basemap-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #0d9488, #06b6d4);
+            box-shadow: 0 6px 16px rgba(13, 148, 136, 0.28);
+            transition: all 0.3s ease;
+        }
+
+        .basemap-option:hover .basemap-icon {
+            transform: scale(1.08);
+            box-shadow: 0 8px 20px rgba(13, 148, 136, 0.35);
+        }
+
+        .basemap-info {
+            flex: 1;
+        }
+
+        .basemap-name {
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+
+        .basemap-desc {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        /* LEGEND PANEL */
+        .legend-panel {
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 350px);
+        }
+
+        .legend-section {
+            margin-bottom: 2rem;
+        }
+
+        .legend-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1rem;
+            color: #0f172a;
+            margin-bottom: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .legend-section h4 i {
+            color: white;
+            background: linear-gradient(135deg, #0d9488, #06b6d4);
+            padding: 0.75rem;
+            border-radius: 10px;
+        }
+
+        .legend-section p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        /* REGION LEGEND ITEM */
+        .region-legend-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f0f4f8 100%);
+            border-radius: 14px;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid #e2e8f0;
+            gap: 1rem;
+        }
+
+        .region-legend-item:hover {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e0eef9 100%);
+            transform: translateX(6px);
+            border-color: #0d9488;
+            box-shadow: 0 12px 32px rgba(13, 148, 136, 0.15);
+        }
+
+        .region-legend-item.active {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.12), rgba(6, 182, 212, 0.08));
+            border-color: #0d9488;
+            border-left: 5px solid #0d9488;
+            box-shadow: 0 16px 40px rgba(13, 148, 136, 0.2);
+        }
+
+        .region-color-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .region-legend-item:hover .region-color-box {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .region-name {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #0f172a;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .no-data-message {
+            background: linear-gradient(135deg, #fef2f2 0%, #fef1f1 100%);
+            color: #be123c;
+            padding: 1.2rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 1rem;
+            border: 2px solid #fecaca;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(190, 18, 60, 0.12);
+        }
+
+        /* POINT LEGEND */
+        .point-legend-item {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #faf9f6 0%, #f5f3f0 100%);
+            border-radius: 14px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .point-legend-item:hover {
+            background: linear-gradient(135deg, #f8f6f3 0%, #f3f0eb 100%);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+            border-color: #d4a5a5;
+        }
+
+        .point-symbol {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+            border: 3px solid white;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .point-legend-item:hover .point-symbol {
+            transform: scale(1.12);
+            box-shadow: 0 12px 28px rgba(239, 68, 68, 0.4);
+        }
+
+        .point-symbol img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .point-label {
+            font-size: 0.95rem;
+            color: #0f172a;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .point-count {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(6, 182, 212, 0.1));
+            color: #0d7377;
+            padding: 0.3rem 0.9rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            margin-left: auto;
+            border: 1.5px solid rgba(13, 148, 136, 0.3);
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.1);
+        }
+
+        /* MAP CONTAINER */
+        .map-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 280px);
+            min-height: 800px;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* NORTH ARROW - BESAR & CLEAN */
+        .north-arrow {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            z-index: 1000;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .north-arrow:hover {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .north-arrow:active {
+            transform: scale(1.1);
+        }
+
+        .north-arrow img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            transition: all 0.3s ease;
+        }
+
+        .north-arrow:hover img {
+            filter: drop-shadow(0 6px 12px rgba(13, 148, 136, 0.3));
+        }
+
+        /* MAP CONTROLS */
+        .leaflet-control-container .leaflet-control {
+            border-radius: 14px !important;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .leaflet-control-scale {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            padding: 0.9rem 1.5rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            border-radius: 14px !important;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+        }
+
+        .leaflet-control-scale-line {
+            border: 4px solid #0d9488 !important;
+            border-top: none !important;
+            padding-top: 8px !important;
+            color: #0f172a !important;
+            font-weight: 800 !important;
+        }
+
+        /* LOADING */
+        #loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            border-radius: 24px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #ecf0f1;
+            border-top: 5px solid #0d9488;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* FOOTER */
+        .footer {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            color: white;
+            padding: 2rem 2.5rem;
+            margin-top: 2.5rem;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(13, 148, 136, 0.2);
+        }
+
+        .footer-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .footer i {
+            margin-right: 0.7rem;
+            color: #06b6d4;
+        }
+
+        /* INFO PANEL */
+        .info-panel {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(6, 182, 212, 0.05));
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid rgba(13, 148, 136, 0.2);
+            display: flex;
+            align-items: flex-start;
+            gap: 1.2rem;
+        }
+
+        .info-panel i {
+            color: #0d9488;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-top: 0.2rem;
+        }
+
+        .info-content h4 {
+            color: #0f172a;
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-content p {
+            color: #4b5563;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .left-panel {
+                flex-direction: row;
+                gap: 2rem;
+            }
+            
+            .basemap-selector, .legend-panel {
+                flex: 1;
+                max-height: none;
+            }
+            
+            .map-container {
+                height: calc(100vh - 280px);
+                min-height: 600px;
+            }
+            
+            .north-arrow {
+                top: 20px;
+                right: 20px;
+                width: 85px;
+                height: 85px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .header {
+                padding: 1.2rem 1.5rem;
+            }
+
+            .header-content {
+                gap: 1rem;
+            }
+
+            .header-title h1 {
+                font-size: 1.3rem;
+            }
+
+            .main-container {
+                gap: 1rem;
+                padding: 0 1rem;
+                min-height: auto;
+            }
+
+            .left-panel {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .basemap-selector, .legend-panel {
+                flex: 1;
+                padding: 1.5rem;
+            }
+            
+            .map-container {
+                height: calc(100vh - 300px);
+                min-height: 500px;
+                border-radius: 20px;
+            }
+
+            .north-arrow {
+                top: 20px;
+                right: 20px;
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 1rem;
+            }
+            
+            .header-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 0.8rem;
+            }
+
+            .header-title {
+                grid-column: 1;
+            }
+
+            .author-badge {
+                grid-column: 1;
+                grid-row: auto;
+            }
+
+            .info-panel {
+                grid-column: 1;
+            }
+            
+            .header-title h1 {
+                font-size: 1.1rem;
+            }
+
+            .author-badge {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .main-container {
+                margin: 1rem auto;
+                padding: 0 0.75rem;
+                gap: 1rem;
+                grid-template-columns: 1fr;
+            }
+            
+            .left-panel {
+                gap: 1rem;
+                flex-direction: column;
+            }
+
+            .basemap-selector, .legend-panel {
+                padding: 1.2rem;
+                border-radius: 16px;
+                flex: 1;
+            }
+
+            .legend-panel {
+                max-height: 280px;
+            }
+            
+            .map-container {
+                height: calc(100vh - 380px);
+                min-height: 400px;
+                border-radius: 16px;
+            }
+            
+            .north-arrow {
+                top: 15px;
+                right: 15px;
+                width: 75px;
+                height: 75px;
+            }
+
+            .info-panel {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                gap: 0.8rem;
+            }
+
+            .info-panel i {
+                font-size: 1.2rem;
+            }
+
+            .info-content h4 {
+                font-size: 0.9rem;
+                margin-bottom: 0.4rem;
+            }
+
+            .info-content p {
+                font-size: 0.8rem;
+                line-height: 1.5;
+            }
+            
+            .footer {
+                padding: 0.8rem 1rem;
+            }
+
+            .footer p {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.9rem 0.8rem;
+            }
+            
+            .header-title h1 {
+                font-size: 1rem;
+                gap: 0.3rem;
+            }
+
+            .header-title p {
+                font-size: 0.75rem;
+            }
+
+            .author-badge {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            .main-container {
+                margin: 0.8rem auto;
+                gap: 0.8rem;
+                padding: 0 0.5rem;
+            }
+
+            .basemap-selector, .legend-panel {
+                padding: 1rem;
+            }
+
+            .basemap-option {
+                padding: 0.75rem;
+            }
+
+            .basemap-name {
+                font-size: 0.85rem;
+            }
+
+            .region-legend-item {
+                padding: 0.75rem;
+            }
+
+            .legend-panel {
+                max-height: 250px;
+            }
+
+            .map-container {
+                height: calc(100vh - 360px);
+                min-height: 350px;
+                border-radius: 12px;
+            }
+
+            .north-arrow {
+                top: 12px;
+                right: 12px;
+                width: 70px;
+                height: 70px;
+            }
+
+            .info-panel {
+                padding: 0.9rem;
+                margin-bottom: 0.8rem;
+                gap: 0.7rem;
+            }
+
+            .info-panel i {
+                font-size: 1.1rem;
+            }
+
+            .info-content h4 {
+                font-size: 0.85rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .info-content p {
+                font-size: 0.75rem;
+                line-height: 1.4;
+            }
+
+            .footer {
+                padding: 0.8rem 0.8rem;
+            }
+
+            .footer p {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* SCROLLBAR */
+        .legend-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .legend-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .legend-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #0d9488, #06b6d4);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(13, 148, 136, 0.3);
+        }
+
+        .legend-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #0a7e76, #04a9b8);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+
+    <!-- HTML CONTENT STARTS HERE -->
+</head>
+
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>
+                    <i class="fas fa-map-location-dot"></i>
+                    WebGIS Jawa Timur
+                </h1>
+                <p>Visualisasi Distribusi Apotek</p>
+            </div>
+            <div class="author-badge">
+                <i class="fas fa-user-circle"></i>
+                <span>Fadilah Rabbani Kanali</span>
+            </div>
+            <!-- INFO PANEL -->
+            <div class="info-panel">
+                <i class="fas fa-circle-info"></i>
+                <div class="info-content">
+                    <h4>Tentang Peta</h4>
+                    <p>Peta interaktif ini menampilkan distribusi apotek di seluruh Jawa Timur. Klik nama wilayah pada legenda untuk melihat wilayah dengan warna highlight, atau gunakan menu peta dasar untuk mengubah tampilan background peta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- LEFT PANEL - CONTROLS -->
+        <div class="left-panel">
+            <!-- BASEMAP SELECTOR -->
+            <div class="basemap-selector">
+                <div class="panel-title">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>PETA DASAR</h3>
+                </div>
+                
+                <div class="basemap-options">
+                    <div class="basemap-option active" data-basemap="osm">
+                        <div class="basemap-icon" style="background: #10b981;">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <div class="basemap-info">
+                            <div class="basemap-name">OpenStreetMap</div>
+                            <div class="basemap-desc">Peta jalan standar</div>
+                        </div>
+                    </div>
+                    
+                    <div class="basemap-option" data-basemap="carto">
+                        <div class="basemap-icon" style="background: #3b82f6;">
+                            <i class="fas fa-globe-americas"></i>
+                        </div>
+                        <div class="basemap-info">
+                            <div class="basemap-name">CartoDB Positron</div>
+                            <div class="basemap-desc">Peta ringan untuk data</div>
+                        </div>
+                    </div>
+                    
+                    <div class="basemap-option" data-basemap="satellite">
+                        <div class="basemap-icon" style="background: #f59e0b;">
+                            <i class="fas fa-satellite"></i>
+                        </div>
+                        <div class="basemap-info">
+                            <div class="basemap-name">Citra Satelit</div>
+                            <div class="basemap-desc">Tampilan visual landscape</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEGENDA -->
+            <div class="legend-panel">
+                <div class="legend-section">
+                    <h4><i class="fas fa-crosshairs"></i> LEGENDA PETA</h4>
+                    
+                    <!-- Legenda Titik (Apotek) -->
+                    <div class="point-legend-item">
+                        <div class="point-symbol">
+                            <img src="assets/logo_apotek.png" alt="Apotek">
+                        </div>
+                        <div class="point-label">Lokasi Apotek</div>
+                        <div class="point-count" id="pharmacy-count">28</div>
+                    </div>
+                </div>
+
+                <div class="legend-section">
+                    <h4><i class="fas fa-layer-group"></i> LEGENDA WILAYAH</h4>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.8rem;">
+                        Klik nama wilayah untuk zoom & highlight
+                    </p>
+                    <div id="region-legend-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAP CONTAINER -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- NORTH ARROW -->
+            <div class="north-arrow" id="north-arrow" title="Arah Utara">
+                <img src="assets/mata_angin.png" alt="Arah Utara" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            
+            <!-- LOADING -->
+            <div id="loading">
+                <div class="spinner"></div>
+                <p style="color: #3b82f6; font-weight: 500;">Memuat data peta...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-content">
+            <p><i class="fas fa-graduation-cap"></i> Ujian Akhir Sistem Informasi Geografis</p>
+            <p><i class="fas fa-code"></i> Dibangun dengan Leaflet.js</p>
+            <p><i class="fas fa-user"></i> FADILAH RABBANI KANALI – 24611053</p>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // ==================== KONFIGURASI ====================
+        let map;
+        let currentBasemap = 'osm';
+        let regionLayers = {};
+        let regionStyles = {};
+        let pharmacyMarkers = L.layerGroup();
+        let highlightedRegion = null;
+        let regionColorMap = {};
+        
+        // Basemap configurations
+        const BASEMAPS = {
+            osm: {
+                name: 'OpenStreetMap',
+                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: 'FADILAH RABBANI KANALI – 24611053 | © OpenStreetMap contributors'
+            },
+            carto: {
+                name: 'CartoDB Positron',
+                url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                attribution: 'FADILAH RABBANI KANALI – 24611053 | © CartoDB'
+            },
+            satellite: {
+                name: 'Citra Satelit',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attribution: 'FADILAH RABBANI KANALI – 24611053 | © Esri'
+            }
+        };
+        
+        // Palet warna untuk wilayah
+        const REGION_COLORS = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+            '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6',
+            '#eab308', '#0ea5e9', '#d946ef', '#22c55e', '#f43f5e',
+            '#3b82f6', '#06b6d4', '#8b5cf6', '#ec4899', '#10b981'
+        ];
+        
+        // Data 25 apotek dari CSV (coordinate ASLI)
+        const PHARMACIES = [
+            {name: "Apotek Sholawat", address: "Jl. Raya Nginjen No.rt 05, RT.rw 01/RW.nomer 158, Nginjen, Pandanpancur, Kec. Deket, Kabupaten Lamongan, Jawa Timur 62291", lat: -7.122450799999999, lng: 112.4708745, city: "Kabupaten Lamongan"},
+            {name: "Apotek Kota Baru", address: "Jl. Klampis Anom No.14, Klampis Ngasem, Kec. Sukolilo, Surabaya, Jawa Timur 60117", lat: -7.2911706, lng: 112.7749328, city: "Kota Surabaya"},
+            {name: "APOTEK TELAGA JAYA", address: "V9JP+MH3, Jl. Raya Pagerwojo, RT.57/RW.01, Tirakkerep, Kesamben, Kec. Kesamben, Kabupaten Blitar, Jawa Timur 66191", lat: -8.118369, lng: 112.38642499999999, city: "Kabupaten Blitar"},
+            {name: "APOTEK BEN PRIMA", address: "Jl. Raya Kepatihan No.112, Area Persawahan, Turi, Kec. Turi, Kabupaten Lamongan, Jawa Timur 62252", lat: -7.084092999999999, lng: 112.3805075, city: "Kabupaten Lamongan"},
+            {name: "APOTEK JES 8", address: "Jl. Jemursari VIII No.39, Jemur Wonosari, Kec. Wonocolo, Surabaya, Jawa Timur 60237", lat: -7.321142099999999, lng: 112.7398894, city: "Kota Surabaya"},
+            {name: "Apotek Nusantara Jaya", address: "sebelahnya Helen's, Superindo, Berada di Jl. Raya Kertajaya Indah No.108, Kertajaya, Mulyorejo, Surabaya, East Java 60116", lat: -7.280818399999999, lng: 112.781684, city: "Kota Surabaya"},
+            {name: "Apotek Esti Farma", address: "Jl. Kertajaya Indah Tengah No.27, Manyar Sabrangan, Kec. Mulyorejo, Surabaya, Jawa Timur 60116", lat: -7.2820792, lng: 112.7766652, city: "Kota Surabaya"},
+            {name: "APOTEK CINTA MEDIKA", address: "Ngumpul, Kec. Jogoroto, Kabupaten Jombang, Jawa Timur 61485", lat: -7.5648957999999995, lng: 112.2773486, city: "Kabupaten Jombang"},
+            {name: "Apotek KPRI Jaya", address: "Jl. Letda Sucipto No.82, Mondokan, Perbon, Kec. Tuban, Kabupaten Tuban, Jawa Timur 62310", lat: -6.88375, lng: 112.02350369999999, city: "Kabupaten Tuban"},
+            {name: "Apotek Karanganyar", address: "WQQ5+VHG, Jl. Raya Karang Anyar, Karang Anyar Lor, Karanganyar, Kec. Poncokusumo, Kabupaten Malang, Jawa Timur 65157", lat: -8.060317399999999, lng: 112.7589433, city: "Kabupaten Malang"},
+            {name: "Apotek Warga Ploso", address: "Jl. Bojonegoro-Jombang, Bawangan, Kec. Ploso, Kabupaten Jombang, Jawa Timur 61453", lat: -7.444322199999999, lng: 112.2245112, city: "Kabupaten Jombang"},
+            {name: "Apotik Asih Jaya Farma 2", address: "JL. Raya Pangean, No. 95 B, Maduran, Sekaran, Lamongan, Kabupaten Lamongan, Jawa Timur 62261", lat: -7.0204543, lng: 112.28092249999999, city: "Kabupaten Lamongan"},
+            {name: "Apotek Mekar Joyo", address: "G9Q4+VJJ, Bahudan, Wuluh, Kec. Kesamben, Kabupaten Jombang, Jawa Timur 61484", lat: -7.4602809, lng: 112.3565728, city: "Kabupaten Jombang"},
+            {name: "Apotek NK Farma", address: "C7MG+CQ8, Jalan Raya, Beji, Kec. Jogoroto, Kabupaten Jombang, Jawa Timur 61485", lat: -7.566459, lng: 112.2769426, city: "Kabupaten Jombang"},
+            {name: "Apotek Blimbing Farma", address: "Sukomulyo, Blimbing, Kec. Gudo, Kabupaten Jombang, Jawa Timur 61463", lat: -7.6402423, lng: 112.2319883, city: "Kabupaten Jombang"},
+            {name: "APOTEK SUMBERMULYO", address: "Jl. KH. Romli Tamim, Sumber Mulyo, Sumbermulyo, Kec. Jombang, Kabupaten Jombang, Jawa Timur 61485", lat: -7.550933499999999, lng: 112.25397559999999, city: "Kabupaten Jombang"},
+            {name: "Apotek Airis", address: "Jl. Raya Karang Juwet No.9, Karang Juwet, Bonowarih, Kec. Karang Ploso, Kabupaten Malang, Jawa Timur 65152", lat: -7.887988399999999, lng: 112.59038489999999, city: "Kabupaten Malang"},
+            {name: "Apotek Sroyo", address: "Jl. P. Sudirman Mejuwet' No.213, Mejuwet Lor, Banjaranyar, Kec. Baureno, Kabupaten Bojonegoro, Jawa Timur 62192", lat: -7.162338, lng: 112.04630999999999, city: "Kabupaten Bojonegoro"},
+            {name: "Apotek Wardoyo", address: "Jl. Baureno-Bojonegoro No.202, Pasinan, Kec. Baureno, Kabupaten Bojonegoro, Jawa Timur 62192", lat: -7.1263605, lng: 112.09875939999999, city: "Kabupaten Bojonegoro"},
+            {name: "Apotek Bojonegoro", address: "Jl. Panglima Sudirman No.2, Kepatihan, Kec. Bojonegoro, Kabupaten Bojonegoro, Jawa Timur 62111", lat: -7.1520874999999995, lng: 111.88247009999999, city: "Kabupaten Bojonegoro"},
+            {name: "APOTEK SRIKANDI BEDAHLAWAK", address: "Dusun melik RT: 03 RW : 03, Bedahlawak, Kec. Tembelang, Kabupaten Jombang, Jawa Timur", lat: -7.464726, lng: 112.2275219, city: "Kabupaten Jombang"},
+            {name: "Apotek Rizkitta Farma", address: "Jl. Kyai Haji Wahab Hasbullah No.94, Tambak Rejo, Kec. Jombang, Kabupaten Jombang, Jawa Timur 61419", lat: -7.5235734, lng: 112.23335949999999, city: "Kabupaten Jombang"},
+            {name: "Apotek Cahaya Medika", address: "F8JR+6F2, Jl. Raya Basuki Rahmad, Sumobito, Kec. Sumobito, Kabupaten Jombang, Jawa Timur 61483", lat: -7.519497899999999, lng: 112.34115, city: "Kabupaten Jombang"},
+            {name: "Apotek Kudu Sehat", address: "Jl. Tapen - Kabuh, Panemon, Bakalanrayung, Kec. Kudu, Kabupaten Jombang, Jawa Timur 61454", lat: -7.4264250999999994, lng: 112.2831277, city: "Kabupaten Jombang"},
+            {name: "Apotek Pelengkap", address: "Kepanjen, Kec. Jombang, Kabupaten Jombang, Jawa Timur", lat: -7.5488209, lng: 112.2357337, city: "Kabupaten Jombang"}
+        ];
+        
+        // ==================== FUNGSI UTAMA ====================
+        function initMap() {
+            console.log("📍 Inisialisasi peta...");
+            
+            // Buat peta
+            map = L.map('map', {
+                center: [-7.5, 112.5],
+                zoom: 8,
+                zoomControl: true,
+                attributionControl: true
+            });
+            
+            // Tambahkan basemap awal
+            addBasemap('osm');
+            
+            // Tambahkan skala (untuk jarak dalam kilometer)
+            L.control.scale({
+                imperial: false,
+                position: 'bottomleft'
+            }).addTo(map);
+            
+            // Setup basemap selector
+            setupBasemapSelector();
+            
+            // Setup north arrow rotation
+            setupNorthArrow();
+            
+            // Load data
+            loadGeoJSON();
+        }
+        
+        function addBasemap(type) {
+            // Hapus layer tile yang ada
+            map.eachLayer(function(layer) {
+                if (layer._url && layer._url.includes('tile')) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            const basemap = BASEMAPS[type];
+            L.tileLayer(basemap.url, {
+                attribution: basemap.attribution,
+                maxZoom: 19
+            }).addTo(map);
+            
+            currentBasemap = type;
+        }
+        
+        function setupBasemapSelector() {
+            const options = document.querySelectorAll('.basemap-option');
+            
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    const type = this.dataset.basemap;
+                    
+                    // Update UI
+                    options.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Change basemap
+                    addBasemap(type);
+                });
+            });
+        }
+
+        function setupNorthArrow() {
+            const northArrow = document.getElementById('north-arrow');
+            if (!northArrow) return;
+
+            // Rotate north arrow sesuai bearing peta
+            function updateNorthArrowRotation() {
+                const bearing = map.getBearing ? map.getBearing() : 0;
+                northArrow.style.transform = `rotate(${bearing}deg)`;
+            }
+
+            // Update pada setiap perubahan rotasi peta
+            map.on('rotate', updateNorthArrowRotation);
+
+            // Klik untuk kembali ke utara
+            northArrow.addEventListener('click', function() {
+                map.setBearing(0);
+                updateNorthArrowRotation();
+            });
+
+            // Initial rotation
+            updateNorthArrowRotation();
+        }
+        
+        function loadGeoJSON() {
+            fetch('assets/jawa-timur.geojson')
+                .then(response => response.json())
+                .then(geojsonData => {
+                    console.log("✅ GeoJSON berhasil dimuat:", geojsonData.features.length, "features");
+                    processRegions(geojsonData);
+                    addPharmacyMarkers();
+                    createRegionLegend();
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error("❌ Error loading GeoJSON:", error);
+                    showError("Gagal memuat data batas wilayah. Periksa file GeoJSON.");
+                });
+        }
+        
+        function processRegions(geojsonData) {
+            let colorIndex = 0;
+            
+            geojsonData.features.forEach((feature, index) => {
+                const regionName = extractRegionName(feature.properties);
+                if (!regionName) return;
+                
+                // Assign warna konsisten
+                if (!regionColorMap[regionName]) {
+                    regionColorMap[regionName] = REGION_COLORS[colorIndex % REGION_COLORS.length];
+                    colorIndex++;
+                }
+                
+                const regionColor = regionColorMap[regionName];
+                
+                // Hitung jumlah apotek di wilayah ini
+                const pharmacyCount = countPharmaciesInRegion(regionName);
+                
+                // Style untuk polygon dengan border yang lebih tegas
+                const regionStyle = {
+                    fillColor: regionColor,
+                    color: '#475569',
+                    weight: 2,
+                    opacity: 0.9,
+                    fillOpacity: 0.25,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                };
+                
+                // Buat layer
+                const regionLayer = L.geoJSON(feature, {
+                    style: regionStyle
+                });
+                
+                // Simpan style
+                regionStyles[regionName] = regionStyle;
+                regionLayers[regionName] = regionLayer;
+                
+                // Tambahkan popup yang benar
+                regionLayer.bindPopup(createRegionPopup(regionName, pharmacyCount));
+                
+                // Event handlers
+                regionLayer.on('click', function(e) {
+                    highlightRegion(regionName);
+                    e.originalEvent.stopPropagation();
+                });
+                
+                regionLayer.on('mouseover', function() {
+                    if (highlightedRegion !== regionName) {
+                        this.setStyle({
+                            weight: 2.5,
+                            color: '#dc2626',
+                            fillOpacity: 0.4,
+                            opacity: 1
+                        });
+                    }
+                });
+                
+                regionLayer.on('mouseout', function() {
+                    if (highlightedRegion !== regionName) {
+                        this.setStyle(regionStyles[regionName]);
+                    }
+                });
+                
+                // Tambahkan ke peta
+                regionLayer.addTo(map);
+            });
+        }
+        
+        function extractRegionName(properties) {
+            // Prioritaskan field yang benar dari GeoJSON jawa-timur
+            const fieldPriority = [
+                'kab_kota', 'KAB_KOTA',
+                'name', 'Name', 'NAME',
+                'kabupaten', 'Kabupaten', 'KABUPATEN',
+                'kota', 'Kota', 'KOTA'
+            ];
+            
+            for (const field of fieldPriority) {
+                if (properties && properties[field]) {
+                    const name = properties[field].toString().trim();
+                    if (name && name.length > 0) {
+                        return name;
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        function countPharmaciesInRegion(regionName) {
+            const normalizedRegion = normalizeString(regionName);
+            
+            return PHARMACIES.filter(pharmacy => {
+                const normalizedCity = normalizeString(pharmacy.city);
+                return normalizedCity.includes(normalizedRegion) || normalizedRegion.includes(normalizedCity);
+            }).length;
+        }
+        
+        function normalizeString(str) {
+            return str.toLowerCase()
+                .replace('kota ', '')
+                .replace('kabupaten ', '')
+                .replace('kab ', '')
+                .trim();
+        }
+        
+        function createRegionPopup(regionName, pharmacyCount) {
+            let content = `
+                <div style="min-width: 250px; font-family: 'Segoe UI', sans-serif;">
+                    <div style="background: #3b82f6; color: white; padding: 12px; margin: -12px -12px 15px -12px; border-radius: 4px 4px 0 0;">
+                        <h4 style="margin: 0; font-size: 16px;">
+                            <i class="fas fa-map-marker-alt"></i> ${regionName}
+                        </h4>
+                    </div>
+                    <div style="padding: 10px;">
+            `;
+            
+            if (pharmacyCount > 0) {
+                // Cari apotek di wilayah ini
+                const pharmacies = PHARMACIES.filter(p => {
+                    const normRegion = normalizeString(regionName);
+                    const normCity = normalizeString(p.city);
+                    return normCity.includes(normRegion) || normRegion.includes(normCity);
+                });
+                
+                content += `
+                    <p style="margin: 8px 0; color: #1e293b;">
+                        <i class="fas fa-clinic-medical" style="color: #3b82f6;"></i>
+                        <strong>Terdapat ${pharmacyCount} apotek:</strong>
+                    </p>
+                `;
+                
+                pharmacies.forEach((pharmacy, index) => {
+                    content += `
+                        <div style="padding: 6px 8px; background: ${index % 2 === 0 ? '#f8fafc' : 'white'}; margin: 4px 0; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>${index + 1}.</strong> ${pharmacy.name}
+                        </div>
+                    `;
+                });
+            } else {
+                content += `
+                    <div style="background: #fef2f2; color: #dc2626; padding: 10px; border-radius: 6px; text-align: center; margin: 8px 0;">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Data apotek tidak tersedia</strong>
+                        <div style="font-size: 0.85rem; margin-top: 4px;">
+                            (hasil scraping)
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content += `
+                    <p style="margin: 12px 0 0 0; font-size: 0.85rem; color: #64748b; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                        <i class="fas fa-lightbulb"></i> Klik nama wilayah di legenda untuk highlight
+                    </p>
+                </div>
+            </div>`;
+            
+            return content;
+        }
+        
+        function addPharmacyMarkers() {
+            // Icon untuk apotek dengan logo
+            const pharmacyIcon = L.divIcon({
+                html: `<div style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); cursor: pointer; transition: transform 0.2s; overflow: hidden;">
+                    <img src="assets/logo_apotek.png" style="width: 26px; height: 26px; object-fit: contain; filter: brightness(0) invert(1);" alt="Apotek">
+                </div>`,
+                iconSize: [44, 44],
+                iconAnchor: [22, 44],
+                popupAnchor: [0, -44],
+                className: 'pharmacy-marker'
+            });
+            
+            // Tambahkan marker untuk setiap apotek
+            PHARMACIES.forEach((pharmacy, index) => {
+                if (!isNaN(pharmacy.lat) && !isNaN(pharmacy.lng)) {
+                    const marker = L.marker([pharmacy.lat, pharmacy.lng], {
+                        icon: pharmacyIcon,
+                        title: pharmacy.name
+                    });
+                    
+                    marker.bindPopup(createPharmacyPopup(pharmacy, index + 1));
+                    pharmacyMarkers.addLayer(marker);
+                }
+            });
+            
+            pharmacyMarkers.addTo(map);
+        }
+        
+        function createPharmacyPopup(pharmacy, number) {
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${pharmacy.lat},${pharmacy.lng}`;
+            
+            return `
+                <div style="min-width: 300px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+                    <!-- Header dengan gradien teal -->
+                    <div style="background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%); color: white; padding: 16px; margin: -12px -12px 0 -12px; border-radius: 12px 12px 0 0; box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);">
+                        <h4 style="margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.3px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-clinic-medical" style="font-size: 20px;"></i> 
+                            <span>Apotek #${number}</span>
+                        </h4>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.9;">Detail Informasi</p>
+                    </div>
+                    
+                    <!-- Content dengan glassmorphism style -->
+                    <div style="padding: 18px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px);">
+                        <!-- Nama Apotek -->
+                        <div style="margin-bottom: 14px; padding: 12px; background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(6, 182, 212, 0.05)); border-radius: 10px; border-left: 3px solid #0d9488;">
+                            <p style="margin: 0; font-size: 12px; color: #0d9488; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Nama Apotek</p>
+                            <p style="margin: 6px 0 0 0; font-size: 15px; font-weight: 600; color: #0f172a;">${pharmacy.name}</p>
+                        </div>
+                        
+                        <!-- Alamat -->
+                        <div style="margin-bottom: 14px; padding: 12px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.05)); border-radius: 10px; border-left: 3px solid #10b981;">
+                            <p style="margin: 0; font-size: 12px; color: #10b981; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Alamat</p>
+                            <p style="margin: 6px 0 0 0; font-size: 13px; color: #4b5563; line-height: 1.5; word-wrap: break-word;">${pharmacy.address}</p>
+                        </div>
+                        
+                        <!-- Wilayah -->
+                        <div style="margin-bottom: 14px; padding: 12px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.05)); border-radius: 10px; border-left: 3px solid #f59e0b;">
+                            <p style="margin: 0; font-size: 12px; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Kabupaten/Kota</p>
+                            <p style="margin: 6px 0 0 0; font-size: 14px; font-weight: 600; color: #0f172a;">${pharmacy.city}</p>
+                        </div>
+                        
+                        <!-- Koordinat -->
+                        <div style="margin-bottom: 16px; padding: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(109, 40, 217, 0.05)); border-radius: 10px; border-left: 3px solid #8b5cf6;">
+                            <p style="margin: 0; font-size: 12px; color: #8b5cf6; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Koordinat GPS</p>
+                            <p style="margin: 8px 0 0 0; font-size: 12px; color: #4b5563; font-family: 'Monaco', 'Courier New', monospace; line-height: 1.6;">
+                                <span style="color: #0f172a; font-weight: 500;">Latitude:</span> ${pharmacy.lat.toFixed(6)}<br>
+                                <span style="color: #0f172a; font-weight: 500;">Longitude:</span> ${pharmacy.lng.toFixed(6)}
+                            </p>
+                        </div>
+                        
+                        <!-- Google Maps Button -->
+                        <a href="${googleMapsUrl}" target="_blank" 
+                           style="display: block; text-align: center; padding: 12px; background: linear-gradient(135deg, #0d9488, #06b6d4); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 4px 15px rgba(13, 148, 136, 0.2); letter-spacing: 0.3px;"
+                           onmouseover="this.style.boxShadow='0 6px 20px rgba(13, 148, 136, 0.35)'; this.style.transform='translateY(-2px)';"
+                           onmouseout="this.style.boxShadow='0 4px 15px rgba(13, 148, 136, 0.2)'; this.style.transform='translateY(0)';">
+                            <i class="fas fa-map-marker-alt"></i> Buka di Google Maps
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function createRegionLegend() {
+            const container = document.getElementById('region-legend-container');
+            container.innerHTML = '';
+            
+            const regions = Object.keys(regionLayers).sort();
+            const regionsWithPharmacies = [];
+            const regionsWithoutData = [];
+            
+            // Kelompokkan wilayah
+            regions.forEach(regionName => {
+                const pharmacyCount = countPharmaciesInRegion(regionName);
+                if (pharmacyCount > 0) {
+                    regionsWithPharmacies.push({ name: regionName, count: pharmacyCount });
+                } else {
+                    regionsWithoutData.push(regionName);
+                }
+            });
+            
+            // Urutkan berdasarkan jumlah apotek (terbanyak di atas)
+            regionsWithPharmacies.sort((a, b) => b.count - a.count);
+            
+            // Tampilkan wilayah dengan apotek
+            regionsWithPharmacies.forEach(region => {
+                const color = regionColorMap[region.name] || '#94a3b8';
+                
+                const item = document.createElement('div');
+                item.className = 'region-legend-item';
+                item.dataset.region = region.name;
+                item.style.cursor = 'pointer';
+                item.innerHTML = `
+                    <div class="region-color-box" style="background-color: ${color};"></div>
+                    <div class="region-name">${region.name}</div>
+                    <div style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 0.2rem 0.5rem; border-radius: 10px; margin-left: auto; font-weight: 600;">
+                        ${region.count} apotek
+                    </div>
+                `;
+                
+                // Click untuk highlight region
+                item.addEventListener('click', function(e) {
+                    highlightRegion(region.name);
+                    e.stopPropagation();
+                });
+
+                // Hover effect
+                item.addEventListener('mouseenter', function() {
+                    const regionLayer = regionLayers[region.name];
+                    if (highlightedRegion !== region.name && regionLayer) {
+                        regionLayer.setStyle({
+                            weight: 2.5,
+                            color: '#dc2626',
+                            fillOpacity: 0.4
+                        });
+                    }
+                });
+
+                item.addEventListener('mouseleave', function() {
+                    const regionLayer = regionLayers[region.name];
+                    if (highlightedRegion !== region.name && regionLayer) {
+                        regionLayer.setStyle(regionStyles[region.name]);
+                    }
+                });
+                
+                container.appendChild(item);
+            });
+            
+            // Tampilkan wilayah tanpa data
+            if (regionsWithoutData.length > 0) {
+                const noDataDiv = document.createElement('div');
+                noDataDiv.className = 'no-data-message';
+                noDataDiv.innerHTML = `
+                    <i class="fas fa-info-circle"></i>
+                    ${regionsWithoutData.length} wilayah: Data apotek tidak tersedia (hasil scraping)
+                `;
+                container.appendChild(noDataDiv);
+            }
+        }
+        
+        function highlightRegion(regionName) {
+            const regionLayer = regionLayers[regionName];
+            if (!regionLayer) return;
+            
+            // Hapus highlight sebelumnya
+            if (highlightedRegion && regionLayers[highlightedRegion]) {
+                regionLayers[highlightedRegion].setStyle(regionStyles[highlightedRegion]);
+                document.querySelectorAll('.region-legend-item.active').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+            
+            // Set highlight baru dengan animasi warna
+            const highlightStyle = {
+                ...regionStyles[regionName],
+                weight: 3,
+                color: '#dc2626',
+                fillOpacity: 0.6
+            };
+            
+            regionLayer.setStyle(highlightStyle);
+            highlightedRegion = regionName;
+            
+            // Update legend UI
+            document.querySelectorAll('.region-legend-item').forEach(item => {
+                if (item.dataset.region === regionName) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Zoom ke wilayah dengan animasi smooth
+            const bounds = regionLayer.getBounds();
+            if (bounds && bounds.isValid()) {
+                map.flyToBounds(bounds, {
+                    padding: [80, 80],
+                    duration: 1.2,
+                    maxZoom: 11,
+                    easeLinearity: 0.25
+                });
+            }
+        }
+        
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 300);
+        }
+        
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = `
+                <div style="text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #dc2626; margin-bottom: 1rem;"></i>
+                    <p style="font-weight: 600; font-size: 1.1rem; color: #dc2626;">${message}</p>
+                </div>
+            `;
+        }
+        
+        // ==================== INISIALISASI ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initMap();
+            } catch (error) {
+                console.error("Error inisialisasi:", error);
+                showError("Gagal memuat peta");
+            }
+        });
+    </script>
+</body>
+</html>
